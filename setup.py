@@ -20,7 +20,9 @@ requirements = [
     "numpy-indexed",
     "scikit-image",
     "acvl-utils",
-    "natsort"
+    "natsort",
+    "pytorch_lightning<=1.9.5",
+    "git+https://github.com/MIC-DKFZ/nnUNet.git@ParticleSeg3D#egg=nnunetv1_particleseg3d"
 ]
 
 test_requirements = [ ]

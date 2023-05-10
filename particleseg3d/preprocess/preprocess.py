@@ -263,7 +263,7 @@ if __name__ == '__main__':
                         help="(Optional) The target particle size in pixels given as three numbers separate by spaces.")
     parser.add_argument('-target_spacing', default=0.1, required=False, type=float,
                         help="(Optional) The target spacing in millimeters given as three numbers separate by spaces.")
-    parser.add_argument('-p', '--processes', required=False, default=None, type=int, help="Number of processes to use for parallel processing. None to disable multiprocessing.")
+    parser.add_argument('-p', '--processes', required=False, default=None, type=int, help="(Optional) Number of processes to use for parallel processing. None to disable multiprocessing.")
     parser.add_argument('-thickness', required=False, default=3, type=int, help="(Optional) Border thickness in pixel.")
     parser.add_argument('-zscore_norm', required=False, default="global_zscore", type=str,
                         help="(Optional) The type of normalization to use. Either 'global_zscore' or 'local_zscore'.")
