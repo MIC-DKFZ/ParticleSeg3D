@@ -16,7 +16,13 @@ requirements = [
     "tqdm",
     "SimpleITK",
     "zarr",
-    "nnunet"
+    "nnunet",
+    "GeodisTK",
+    "connected-components-3d",
+    "numpy-indexed",
+    "scikit-image",
+    "acvl-utils",
+    "natsort"
 ]
 
 test_requirements = [ ]

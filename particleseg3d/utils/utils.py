@@ -1,23 +1,15 @@
-try:
-    import global_mp_pool
-except ModuleNotFoundError as e:
-    import sys
-    from pathlib import Path
-    sys.path.append(str(Path('').absolute().parent))
-    from particle_seg.helper import global_mp_pool
-
 import numpy as np
 import SimpleITK as sitk
 import torch
 from torch.nn import functional
-import os
-from natsort import natsorted
-from os.path import join
 import torchio as tio
 from skimage.transform import resize
 from tqdm import tqdm
 from multiprocessing import Pool
 from functools import partial
+from os.path import join
+from natsort import natsorted
+import os
 
 
 def resample(image: np.ndarray, target_shape, is_seg=False) -> np.ndarray:
@@ -184,11 +176,6 @@ def standardize_tio(subject, zscore, gpu=True):
     return subject
 
 
-import numpy as np
-from os.path import join
-from natsort import natsorted
-import os
-
 def load_filepaths(load_dir, extension=None, return_path=True, return_extension=True):
     filepaths = []
     if isinstance(extension, str):
@@ -241,7 +228,7 @@ def load_nifti(filename, return_meta=False, is_seg=False):
         return image_np, spacing, affine, header
 
 
-def save_nifti(filename, image, spacing=None, affine=None, header=None, is_seg=False, dtype=None, in_background=False):
+def save_nifti(filename, image, spacing=None, affine=None, header=None, is_seg=False, dtype=None):
     if is_seg:
         image = np.rint(image)
         if dtype is None:
@@ -261,12 +248,7 @@ def save_nifti(filename, image, spacing=None, affine=None, header=None, is_seg=F
     if affine is not None:
         pass  # How do I set the affine transform with SimpleITK? With NiBabel it is just nib.Nifti1Image(img, affine=affine, header=header)
 
-    if not in_background:
-        sitk.WriteImage(image, filename)
-    else:
-        global_pool, global_pool_results = global_mp_pool.get_pool()
-        # global_pool_results.append(global_pool.starmap_async(_save, ((filename, image), )))
-        global_mp_pool.queue_job(global_pool.starmap_async, _save, ((filename, image), ))
+    sitk.WriteImage(image, filename)
 
 
 def _save(filename, image):

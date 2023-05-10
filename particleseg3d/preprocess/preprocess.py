@@ -5,15 +5,15 @@ sys.path.append(str(Path('').absolute().parent))
 import torchio as tio
 import numpy as np
 from tqdm import tqdm
-from particle_seg.helper import utils
-from particle_seg.helper.imap_tqdm import imap_tqdm
+from particleseg3d.utils import utils
+from particleseg3d.utils.imap_tqdm import imap_tqdm
 import json
 from os.path import join
 import gc
 import SimpleITK as sitk
 from nnunet.dataset_conversion.utils import generate_dataset_json
-from sampler import GridSampler, MultiSizeUniformSampler
-from particle_seg.conversion.instance2border_semantic import instance2border_semantic_process
+from particleseg3d.utils.sampler import GridSampler, MultiSizeUniformSampler
+from particleseg3d.conversion.instance2border_core import instance2border_core_process
 import zarr
 from particle_touch_preprocess import preprocess_seg_all
 
@@ -186,7 +186,7 @@ def preprocess_single(image_load_filepath, seg_load_filepath, metadata_load_file
             utils.save_nifti(image_save_filepath, image, spacing=target_spacing, dtype=np.uint8)
         if train:
             instance_seg = patch["label"].numpy()[0]
-            semantic_seg = instance2border_semantic_process(instance_seg, border_thickness_in_pixel=border_thickness_in_pixel)
+            semantic_seg = instance2border_core_process(instance_seg, border_thickness_in_pixel=border_thickness_in_pixel)
             semantic_seg_save_filepath = join(semantic_seg_save_dir, patch_name + ".nii.gz")
             instance_seg_save_filepath = join(instance_seg_save_dir, patch_name + ".nii.gz")
             semantic_seg_zarr_save_filepath = join(semantic_seg_zarr_save_dir, patch_name + ".zarr")
