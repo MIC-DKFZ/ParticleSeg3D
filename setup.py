@@ -22,7 +22,7 @@ requirements = [
     "acvl-utils",
     "natsort",
     "pytorch_lightning<=1.9.5",
-    "git+https://github.com/MIC-DKFZ/nnUNet.git@ParticleSeg3D#egg=nnunetv1_particleseg3d"
+    "nnUNet @ git+https://github.com/MIC-DKFZ/nnUNet.git@ParticleSeg3D", # @ParticleSeg3D#egg=nnunetv1_particleseg3d
 ]
 
 test_requirements = [ ]
