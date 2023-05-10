@@ -11,12 +11,10 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 requirements = [
-    "torchio",
     "numpy",
     "tqdm",
     "SimpleITK",
     "zarr",
-    "nnunet",
     "GeodisTK",
     "connected-components-3d",
     "numpy-indexed",
