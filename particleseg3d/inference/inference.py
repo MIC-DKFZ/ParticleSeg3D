@@ -27,7 +27,7 @@ def setup_model(model_dir, folds):
 
     model = Nnunet(model_dir, folds=folds, nnunet_trainer="nnUNetTrainerV2_slimDA5_touchV5__nnUNetPlansv2.1", configuration="3d_fullres")
     model.eval()
-    trainer = pl.Trainer(gpus=1, precision=16)
+    trainer = pl.Trainer(gpus=1, precision=16, logger=False)
     return trainer, model, config
 
 
