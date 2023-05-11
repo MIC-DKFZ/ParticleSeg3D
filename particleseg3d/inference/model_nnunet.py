@@ -30,7 +30,6 @@ class Nnunet(pl.LightningModule):
         for fold in folds:
             checkpoint_path = join(experiment_dir, fold, "{}.model".format(checkpoint))
             if Path(checkpoint_path).is_file():
-                print("Loading fold {} for ensemble.".format(fold))
                 with open(join(experiment_dir, fold, "debug.json")) as f:
                     model_config = json.load(f)
                 network = self.initialize_network(model_config, configuration)
@@ -100,12 +99,15 @@ class Nnunet(pl.LightningModule):
         for i, class_dice in enumerate(class_dices):
             self.log('Val/Class Dice {}'.format(i), class_dice)
 
-    def prediction_setup(self, aggregator, chunked):
+    def prediction_setup(self, aggregator, chunked, zscore):
         self.aggregator = aggregator
         self.chunked = chunked
+        self.zscore = zscore
 
     def predict_step(self, batch: Any, batch_idx: int) -> Any:
         img_patch, patch_indices = batch
+        img_patch -= self.zscore["mean"]
+        img_patch /= self.zscore["std"]
         if not self.tta:
             pred_patch = self(img_patch)
             pred_patch = self.final_activation(pred_patch)
@@ -114,8 +116,6 @@ class Nnunet(pl.LightningModule):
         pred_patch = torch.mean(pred_patch, axis=1)  # (b, e, c, x, y, z) -> (b, c, x, y, z)
         pred_patch = pred_patch.cpu().numpy()
         patch_indices = [value.cpu().numpy() for value in patch_indices]
-        # utils.save_nifti("/home/k539i/Documents/datasets/original/2021_Gotkowski_HZDR-HIF/preprocessed_datasets/train_patches/dataset_train/tmp/patch_img_{}.nii.gz".format(batch_idx), img_patch[0].cpu().numpy())
-        # utils.save_nifti("/home/k539i/Documents/datasets/original/2021_Gotkowski_HZDR-HIF/preprocessed_datasets/train_patches/dataset_train/tmp/patch_pred_{}.nii.gz".format(batch_idx), np.argmax(pred_patch[0], axis=0))
         for i in range(len(pred_patch)):
             if self.chunked:
                 self.aggregator.append(pred_patch[i], (patch_indices[0][i], patch_indices[1][i]))
