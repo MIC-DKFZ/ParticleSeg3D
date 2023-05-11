@@ -13,24 +13,24 @@ import json
 
 
 class Nnunet(pl.LightningModule):
-    def __init__(self, experiment_dir, folds=None, nnunet_trainer="nnUNetTrainerV2__nnUNetPlansv2.1", configuration="3D", tta=True, checkpoint="model_best"):  # checkpoint: model_best, model_final_checkpoint
+    def __init__(self, model_dir, folds=None, nnunet_trainer="nnUNetTrainerV2__nnUNetPlansv2.1", configuration="3D", tta=True, checkpoint="model_best"):  # checkpoint: model_best, model_final_checkpoint
         super().__init__()
 
         self.nnunet_trainer = nnunet_trainer
         self.configuration = configuration
-        self.network = self.load_checkpoint(experiment_dir, folds, configuration, checkpoint)
+        self.network = self.load_checkpoint(model_dir, folds, configuration, checkpoint)
         self.final_activation = nn.Softmax(dim=2)
         self.tta = tta
 
-    def load_checkpoint(self, experiment_dir, folds, configuration, checkpoint):
+    def load_checkpoint(self, model_dir, folds, configuration, checkpoint):
         ensemble = []
         if folds is None:
             folds = (0, 1, 2, 3, 4)
         folds = ["fold_{}".format(fold) for fold in folds]
         for fold in folds:
-            checkpoint_path = join(experiment_dir, fold, "{}.model".format(checkpoint))
+            checkpoint_path = join(model_dir, fold, "{}.model".format(checkpoint))
             if Path(checkpoint_path).is_file():
-                with open(join(experiment_dir, fold, "debug.json")) as f:
+                with open(join(model_dir, fold, "debug.json")) as f:
                     model_config = json.load(f)
                 network = self.initialize_network(model_config, configuration)
                 network.load_state_dict(torch.load(checkpoint_path)["state_dict"])
@@ -38,20 +38,19 @@ class Nnunet(pl.LightningModule):
             else:
                 print("Could not find fold {} for ensemble.".format(fold))
         if not ensemble:
-            raise RuntimeError("Could not find any folds in experiment_dir ({}).".format(experiment_dir))
+            raise RuntimeError("Could not find any folds in experiment_dir ({}).".format(model_dir))
         ensemble = nn.ModuleList(ensemble)
         return ensemble
 
     def initialize_network(self, model_config, configuration):
-        if configuration == "3D":
+        if configuration == "3d_fullres":
             conv_op = nn.Conv3d
             dropout_op = nn.Dropout3d
             if self.nnunet_trainer == "nnUNetTrainerV2_BN__nnUNetPlansv2.1":
                 norm_op = nn.BatchNorm3d
             else:
                 norm_op = nn.InstanceNorm3d
-        elif configuration == "2D":
-            print("2D")
+        elif configuration == "2d":
             conv_op = nn.Conv2d
             dropout_op = nn.Dropout2d
             norm_op = nn.InstanceNorm2d

@@ -723,3 +723,50 @@ def save_json(obj: dict, file: str, indent: int = 4, sort_keys: bool = True) -> 
     """
     with open(file, 'w') as f:
         json.dump(obj, f, sort_keys=sort_keys, indent=indent)
+
+
+def pixel2mm(length: tuple[float], spacing: tuple[float]) -> np.ndarray:
+    """
+    Convert a length in pixel to millimeter using the given spacing.
+
+    Args:
+        length (tuple[float]): Length in pixel.
+        spacing (tuple[float]): Voxel spacing in millimeter.
+
+    Returns:
+        np.ndarray: Length in millimeter.
+    """
+    return np.asarray(length) * np.asarray(spacing)
+
+
+def mm2pixel(length: tuple[float], spacing: tuple[float]) -> np.ndarray:
+    """
+    Convert a length in millimeter to pixel using the given spacing.
+
+    Args:
+        length (tuple[float]): Length in millimeter.
+        spacing (tuple[float]): Voxel spacing in millimeter.
+
+    Returns:
+        np.ndarray: Length in pixel.
+    """
+    return np.asarray(length) / np.asarray(spacing)
+
+
+def compute_size_conversion_factor(source_particle_size_in_mm: tuple[float], source_spacing: tuple[float],
+                                    target_particle_size_in_mm: tuple[float], target_spacing: tuple[float]) -> np.ndarray:
+    """
+    Compute the conversion factor between the source and target size in pixel.
+
+    Args:
+        source_particle_size_in_mm (tuple[float]): Particle size of the source image in millimeter.
+        source_spacing (tuple[float]): Voxel spacing of the source image in millimeter.
+        target_particle_size_in_mm (tuple[float]): Particle size of the target image in millimeter.
+        target_spacing (tuple[float]): Voxel spacing of the target image in millimeter.
+
+    Returns:
+        np.ndarray: Conversion factor.
+    """
+    factor = np.asarray(target_spacing) / np.asarray(source_spacing)
+    factor *= np.asarray(source_particle_size_in_mm) / np.asarray(target_particle_size_in_mm)
+    return factor
