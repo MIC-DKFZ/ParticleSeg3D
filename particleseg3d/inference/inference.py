@@ -19,9 +19,22 @@ import pickle
 from batchgenerators.augmentations.utils import pad_nd_image
 import cc3d
 import numpy_indexed as npi
+from typing import List, Tuple, Any, Optional, Dict, Type
 
 
-def setup_model(model_dir, folds):
+def setup_model(model_dir: str, folds: List[int]) -> Tuple[pl.Trainer, Nnunet, Any]:
+    """
+    Set up the model for inference.
+
+    Args:
+        model_dir: The directory containing the model files.
+        folds: The folds to use for inference.
+
+    Returns:
+        trainer: The PyTorch Lightning Trainer object.
+        model: The initialized Nnunet model.
+        config: The model configuration.
+    """
     with open(join(model_dir, "plans.pkl"), 'rb') as handle:
         config = pickle.load(handle)
 
@@ -31,7 +44,38 @@ def setup_model(model_dir, folds):
     return trainer, model, config
 
 
-def predict_cases(load_dir, save_dir, names, trainer, model, config, target_particle_size, target_spacing, processes, min_rel_particle_size, zscore_norm):
+def predict_cases(
+    load_dir: str,
+    save_dir: str,
+    names: Optional[List[str]],
+    trainer: pl.Trainer,
+    model: Nnunet,
+    config: Any,
+    target_particle_size: Tuple[float, float, float],
+    target_spacing: Tuple[float, float, float],
+    processes: int,
+    min_rel_particle_size: float,
+    zscore_norm: str
+) -> None:
+    """
+    Perform inference on multiple cases.
+
+    Args:
+        load_dir: The directory containing the input data.
+        save_dir: The directory to save the output predictions.
+        names: Optional. The names of the cases to process. If None, all cases in `load_dir` will be processed.
+        trainer: The PyTorch Lightning Trainer object.
+        model: The initialized Nnunet model.
+        config: The model configuration.
+        target_particle_size: The target particle size in pixels.
+        target_spacing: The target spacing in millimeters.
+        processes: The number of processes to use for parallel processing.
+        min_rel_particle_size: The minimum relative particle size used for filtering.
+        zscore_norm: The type of normalization to use.
+
+    Returns:
+        None
+    """
     metadata_filepath = join(load_dir, "metadata.json")
     zscore_filepath = join(load_dir, "zscore.json")
 
@@ -42,7 +86,42 @@ def predict_cases(load_dir, save_dir, names, trainer, model, config, target_part
         predict_case(load_dir, save_dir, name, metadata_filepath, zscore_filepath, trainer, model, config, target_particle_size, target_spacing, processes, min_rel_particle_size, zscore_norm)
 
 
-def predict_case(load_dir, save_dir, name, metadata_filepath, zscore_filepath, trainer, model, config, target_particle_size_in_pixel, target_spacing, processes, min_rel_particle_size, zscore_norm):
+def predict_case(
+    load_dir: str,
+    save_dir: str,
+    name: str,
+    metadata_filepath: str,
+    zscore_filepath: str,
+    trainer: pl.Trainer,
+    model: Nnunet,
+    config: Any,
+    target_particle_size_in_pixel: float,
+    target_spacing: Tuple[float, float, float],
+    processes: int,
+    min_rel_particle_size: float,
+    zscore_norm: str
+) -> None:
+    """
+    Perform inference on a single case.
+
+    Args:
+        load_dir: The directory containing the input data.
+        save_dir: The directory to save the output predictions.
+        name: The name of the case to process.
+        metadata_filepath: The file path to the metadata.
+        zscore_filepath: The file path to the z-score.
+        trainer: The PyTorch Lightning Trainer object.
+        model: The initialized Nnunet model.
+        config: The model configuration.
+        target_particle_size_in_pixel: The target particle size in pixels.
+        target_spacing: The target spacing in millimeters.
+        processes: The number of processes to use for parallel processing.
+        min_rel_particle_size: The minimum relative particle size used for filtering.
+        zscore_norm: The type of normalization to use.
+
+    Returns:
+        None
+    """
     print("Starting inference of sample: ", name)
     load_filepath = join(load_dir, "images", "{}.zarr".format(name))
     pred_softmax_filepath, pred_border_core_filepath, pred_border_core_tmp_filepath, pred_instance_filepath = setup_folder_structure(save_dir, name)
@@ -63,7 +142,23 @@ def predict_case(load_dir, save_dir, name, metadata_filepath, zscore_filepath, t
             source_spacing, source_particle_size, trainer, model, processes, min_rel_particle_size, zscore)
 
 
-def setup_folder_structure(save_dir, name):
+def setup_folder_structure(
+    save_dir: str,
+    name: str
+) -> Tuple[str, str, str, str]:
+    """
+    Set up the folder structure for saving predictions.
+
+    Args:
+        save_dir: The directory to save the predictions.
+        name: The name of the case.
+
+    Returns:
+        pred_softmax_filepath: The file path for predicted softmax.
+        pred_border_core_filepath: The file path for predicted border and core.
+        pred_border_core_tmp_filepath: The temporary file path for predicted border and core.
+        pred_instance_filepath: The file path for predicted instances.
+    """
     Path(join(save_dir, name)).mkdir(parents=True, exist_ok=True)
     pred_softmax_filepath = join(save_dir, name, "{}_softmax_tmp.zarr".format(name))
     pred_border_core_filepath = join(save_dir, name, "{}_border.zarr".format(name))
@@ -76,8 +171,48 @@ def setup_folder_structure(save_dir, name):
     return pred_softmax_filepath, pred_border_core_filepath, pred_border_core_tmp_filepath, pred_instance_filepath
 
 
-def predict(load_filepath, pred_softmax_filepath, pred_border_core_filepath, pred_border_core_tmp_filepath, pred_instance_filepath, target_spacing, target_particle_size_in_mm, target_particle_size_in_pixel, target_patch_size_in_pixel,
-            source_spacing, source_particle_size, trainer, model, processes, min_rel_particle_size, zscore):
+def predict(
+    load_filepath: str,
+    pred_softmax_filepath: str,
+    pred_border_core_filepath: str,
+    pred_border_core_tmp_filepath: str,
+    pred_instance_filepath: str,
+    target_spacing: Tuple[float, float, float],
+    target_particle_size_in_mm: Tuple[float, float, float],
+    target_particle_size_in_pixel: float,
+    target_patch_size_in_pixel: float,
+    source_spacing: Tuple[float, float, float],
+    source_particle_size: Tuple[float, float, float],
+    trainer: pl.Trainer,
+    model: Nnunet,
+    processes: int,
+    min_rel_particle_size: float,
+    zscore: Dict[str, Any]
+) -> None:
+    """
+    Perform the prediction for a single case.
+
+    Args:
+        load_filepath: The file path of the input data.
+        pred_softmax_filepath: The file path to save the predicted softmax.
+        pred_border_core_filepath: The file path to save the predicted border and core.
+        pred_border_core_tmp_filepath: The temporary file path to save the predicted border and core.
+        pred_instance_filepath: The file path to save the predicted instances.
+        target_spacing: The target spacing in millimeters.
+        target_particle_size_in_mm: The target particle size in millimeters.
+        target_particle_size_in_pixel: The target particle size in pixels.
+        target_patch_size_in_pixel: The target patch size in pixels.
+        source_spacing: The source spacing in millimeters.
+        source_particle_size: The source particle size in millimeters.
+        trainer: The PyTorch Lightning Trainer object.
+        model: The initialized Nnunet model.
+        processes: The number of processes to use for parallel processing.
+        min_rel_particle_size: The minimum relative particle size used for filtering.
+        zscore: The z-score normalization values.
+
+    Returns:
+        None
+    """
     try:
         img = zarr.open(load_filepath, mode='r')
     except zarr.errors.PathNotFoundError as e:
@@ -102,13 +237,37 @@ def predict(load_filepath, pred_softmax_filepath, pred_border_core_filepath, pre
     shutil.rmtree(pred_border_core_tmp_filepath, ignore_errors=True)
 
 
-def compute_zoom(img, source_spacing, source_particle_size, target_spacing, target_particle_size_in_mm, target_patch_size_in_pixel):
+def compute_zoom(
+    img: Any,
+    source_spacing: Tuple[float, float, float],
+    source_particle_size: Tuple[float, float, float],
+    target_spacing: Tuple[float, float, float],
+    target_particle_size_in_mm: Tuple[float, float, float],
+    target_patch_size_in_pixel: float
+) -> Tuple[float, float, Any, Any]:
+    """
+    Compute the zoom parameters for resizing.
+
+    Args:
+        img: The input image.
+        source_spacing: The source spacing in millimeters.
+        source_particle_size: The source particle size in millimeters.
+        target_spacing: The target spacing in millimeters.
+        target_particle_size_in_mm: The target particle size in millimeters.
+        target_patch_size_in_pixel: The target patch size in pixels.
+
+    Returns:
+        source_patch_size_in_pixel: The source patch size in pixels.
+        source_chunk_size: The source chunk size.
+        resized_image_shape: The shape of the resized image.
+        resized_chunk_size: The resized chunk size.
+    """
     if np.array_equal(target_particle_size_in_mm, [0, 0, 0]):
         return target_patch_size_in_pixel, target_patch_size_in_pixel * 4, img.shape, target_patch_size_in_pixel * 4
     image_shape = np.asarray(img.shape[-3:])
     source_particle_size_in_mm = tuple(source_particle_size)
     source_spacing = tuple(source_spacing)
-    _, source_patch_size_in_pixel, size_conversion_factor = compute_patch_size(target_spacing, target_particle_size_in_mm, target_patch_size_in_pixel, source_spacing, source_particle_size_in_mm, image_shape)
+    _, source_patch_size_in_pixel, size_conversion_factor = compute_patch_size(target_spacing, target_particle_size_in_mm, target_patch_size_in_pixel, source_spacing, source_particle_size_in_mm)
     for i in range(len(source_patch_size_in_pixel)):
         if source_patch_size_in_pixel[i] % 2 != 0:  # If source_patch_size_in_pixel is odd then patch_overlap is not a round number. This fixes that.
             source_patch_size_in_pixel[i] += 1
@@ -122,7 +281,34 @@ def compute_zoom(img, source_spacing, source_particle_size, target_spacing, targ
     return source_patch_size_in_pixel, source_chunk_size, resized_image_shape, resized_chunk_size
 
 
-def create_sampler_and_aggregator(img, pred_border_core_filepath, source_patch_size_in_pixel, target_patch_size_in_pixel, resized_image_shape, source_chunk_size, resized_chunk_size, target_spacing):
+def create_sampler_and_aggregator(
+    img: Any,
+    pred_border_core_filepath: str,
+    source_patch_size_in_pixel: float,
+    target_patch_size_in_pixel: float,
+    resized_image_shape: Any,
+    source_chunk_size: Any,
+    resized_chunk_size: Any,
+    target_spacing: Tuple[float, float, float]
+) -> Tuple[Any, Any, bool]:
+    """
+    Create the sampler and aggregator for prediction.
+
+    Args:
+        img: The input image.
+        pred_border_core_filepath: The file path to save the predicted border and core.
+        source_patch_size_in_pixel: The source patch size in pixels.
+        target_patch_size_in_pixel: The target patch size in pixels.
+        resized_image_shape: The shape of the resized image.
+        source_chunk_size: The source chunk size.
+        resized_chunk_size: The resized chunk size.
+        target_spacing: The target spacing in millimeters.
+
+    Returns:
+        sampler: The data sampler.
+        aggregator: The aggregator for prediction.
+        chunked: A flag indicating if chunked processing is used.
+    """
     region_class_order = None
     batch_size = 6
     num_workers = 12
@@ -150,8 +336,34 @@ def create_sampler_and_aggregator(img, pred_border_core_filepath, source_patch_s
     return sampler, aggregator, chunked
 
 
-def border_core2instance_conversion(border_core_pred, pred_border_core_tmp_filepath, crop_slices, original_size,
-                                    source_spacing, save_filepath, debug=False, dtype=np.uint16, processes=None):
+def border_core2instance_conversion(
+    border_core_pred: Any,
+    pred_border_core_tmp_filepath: str,
+    crop_slices: Any,
+    original_size: Any,
+    source_spacing: Tuple[float, float, float],
+    save_filepath: str,
+    debug: bool = False,
+    dtype: Type = np.uint16,
+    processes: Optional[int] = None
+) -> Any:
+    """
+    Convert border and core predictions to instance predictions.
+
+    Args:
+        border_core_pred: The predicted border and core.
+        pred_border_core_tmp_filepath: The temporary file path for predicted border and core.
+        crop_slices: The crop slices for the original image.
+        original_size: The original size of the image.
+        source_spacing: The source spacing in millimeters.
+        save_filepath: The file path to save the predicted instances.
+        debug: Optional. Enable debug mode.
+        dtype: The data type of the output instance predictions.
+        processes: Optional. The number of processes to use for parallel processing.
+
+    Returns:
+        instance_pred: The predicted instances.
+    """
     if debug:
         border_core_pred_resampled = np.array(border_core_pred)
         utils.save_nifti(save_filepath + "_border_core_zoomed.nii.gz", border_core_pred_resampled, source_spacing)
@@ -163,7 +375,20 @@ def border_core2instance_conversion(border_core_pred, pred_border_core_tmp_filep
     return instance_pred
 
 
-def filter_small_particles(instance_pred, min_rel_particle_size):
+def filter_small_particles(
+    instance_pred: Any,
+    min_rel_particle_size: Optional[float]
+) -> Any:
+    """
+    Filter out small particles from the instance predictions.
+
+    Args:
+        instance_pred: The predicted instances.
+        min_rel_particle_size: Optional. The minimum relative particle size used for filtering.
+
+    Returns:
+        instance_pred: The filtered instance predictions.
+    """
     if min_rel_particle_size is None:
         return instance_pred
 
@@ -185,13 +410,42 @@ def filter_small_particles(instance_pred, min_rel_particle_size):
     return instance_pred
 
 
-def save_prediction(instance_pred, save_filepath, source_spacing):
+def save_prediction(
+    instance_pred: Any,
+    save_filepath: str,
+    source_spacing: Tuple[float, float, float]
+) -> None:
+    """
+    Save the predicted instances to a file.
+
+    Args:
+        instance_pred: The predicted instances.
+        save_filepath: The file path to save the instances.
+        source_spacing: The source spacing in millimeters.
+
+    Returns:
+        None
+    """
     instance_pred_zarr = zarr.open(save_filepath + ".zarr", shape=instance_pred.shape, mode='w')
     instance_pred_zarr[...] = instance_pred
     instance_pred_zarr.attrs["spacing"] = source_spacing
 
 
-def pad_image(image, target_image_shape):
+def pad_image(
+    image: Any,
+    target_image_shape: Any
+) -> Tuple[Any, Optional[Any]]:
+    """
+    Pad the image to match the target image shape.
+
+    Args:
+        image: The input image.
+        target_image_shape: The target image shape.
+
+    Returns:
+        image: The padded image.
+        slices: The crop slices if padding is applied, None otherwise.
+    """
     if np.any(image.shape < target_image_shape):
         pad_kwargs = {'constant_values': 0}
         image = np.asarray(image)
@@ -201,13 +455,48 @@ def pad_image(image, target_image_shape):
         return image, None
 
 
-def crop_pred(pred, crop_slices):
+def crop_pred(
+    pred: Any,
+    crop_slices: Optional[Any]
+) -> Any:
+    """
+    Crop the prediction using the crop slices.
+
+    Args:
+        pred: The prediction.
+        crop_slices: The crop slices.
+
+    Returns:
+        cropped_pred: The cropped prediction.
+    """
     if crop_slices is not None:
         pred = pred[tuple(crop_slices)]
     return pred
 
 
-def compute_patch_size(target_spacing, target_particle_size_in_mm, target_patch_size_in_pixel, source_spacing, source_particle_size_in_mm, image_shape):
+def compute_patch_size(
+    target_spacing: Tuple[float, float, float],
+    target_particle_size_in_mm: Tuple[float, float, float],
+    target_patch_size_in_pixel: float,
+    source_spacing: Tuple[float, float, float],
+    source_particle_size_in_mm: Tuple[float, float, float]
+) -> Tuple[float, float, Any]:
+    """
+    Compute the patch size for resizing.
+
+    Args:
+        target_spacing: The target spacing in millimeters.
+        target_particle_size_in_mm: The target particle size in millimeters.
+        target_patch_size_in_pixel: The target patch size in pixels.
+        source_spacing: The source spacing in millimeters.
+        source_particle_size_in_mm: The source particle size in millimeters.
+        image_shape: The shape of the image.
+
+    Returns:
+        target_patch_size_in_pixel: The target patch size in pixels.
+        source_patch_size_in_pixel: The source patch size in pixels.
+        size_conversion_factor: The size conversion factor.
+    """
     size_conversion_factor = utils.compute_size_conversion_factor(source_particle_size_in_mm, source_spacing, target_particle_size_in_mm, target_spacing)
     size_conversion_factor = np.around(size_conversion_factor, decimals=3)
     source_patch_size_in_pixel = np.rint(target_patch_size_in_pixel * size_conversion_factor).astype(int)
