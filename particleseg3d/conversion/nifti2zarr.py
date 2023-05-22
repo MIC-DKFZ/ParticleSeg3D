@@ -48,8 +48,4 @@ if __name__ == '__main__':
     if not args.input.endswith(".nii.gz"):
         all_nifti2zarr(args.input, args.output)
     else:
-        save_dir = os.path.dirname(args.output)
-        name = os.path.basename(args.input)[:-7]
-        load_filepath = args.input
-        save_filepath = join(args.output, name + ".nii.gz")
-        nifti2zarr(load_filepath, save_filepath)
+        nifti2zarr(args.input, args.output)
