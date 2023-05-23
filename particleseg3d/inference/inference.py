@@ -22,7 +22,7 @@ import numpy_indexed as npi
 from typing import List, Tuple, Any, Optional, Dict, Type
 
 
-def setup_model(model_dir: str, folds: List[int], trainer: str = "nnUNetTrainerV2_slimDA5_touchV5__nnUNetPlansv2.1") -> Tuple[pl.Trainer, Nnunet, Any]:
+def setup_model(model_dir: str, folds: List[int], trainer: str = "nnUNetTrainerV2_slimDA5_touchV5__nnUNetPlansv2.1") -> Tuple[pl.Trainer, Nnunet, Dict[str, Any]]:
     """
     Set up the model for inference.
 
@@ -32,9 +32,10 @@ def setup_model(model_dir: str, folds: List[int], trainer: str = "nnUNetTrainerV
         trainer: The name of the trainer.
 
     Returns:
-        trainer: The PyTorch Lightning Trainer object.
-        model: The initialized Nnunet model.
-        config: The model configuration.
+        A tuple containing:
+            trainer: The PyTorch Lightning Trainer object.
+            model: The initialized Nnunet model.
+            config: The model configuration.
     """
     with open(join(model_dir, trainer, "plans.pkl"), 'rb') as handle:
         config = pickle.load(handle)
@@ -51,7 +52,7 @@ def predict_cases(
     names: Optional[List[str]],
     trainer: pl.Trainer,
     model: Nnunet,
-    config: Any,
+    config: Dict[str, Any],
     target_particle_size: Tuple[float, float, float],
     target_spacing: Tuple[float, float, float],
     batch_size: int,
@@ -71,12 +72,10 @@ def predict_cases(
         config: The model configuration.
         target_particle_size: The target particle size in pixels.
         target_spacing: The target spacing in millimeters.
+        batch_size: The batch size to use during inference.
         processes: The number of processes to use for parallel processing.
         min_rel_particle_size: The minimum relative particle size used for filtering.
         zscore_norm: The type of normalization to use.
-
-    Returns:
-        None
     """
     image_dir = join(load_dir, "images_preprocessed")
     metadata_filepath = join(load_dir, "metadata.json")
@@ -94,6 +93,9 @@ def predict_cases(
         predict_case(image_dir, save_dir, name, metadata_filepath, zscore_filepath, trainer, model, config, target_particle_size, target_spacing, processes, min_rel_particle_size, zscore_norm, batch_size)
 
 
+from pathlib import Path
+import shutil
+
 def predict_case(
     load_dir: str,
     save_dir: str,
@@ -102,7 +104,7 @@ def predict_case(
     zscore_filepath: str,
     trainer: pl.Trainer,
     model: Nnunet,
-    config: Any,
+    config: Dict[str, Any],
     target_particle_size_in_pixel: float,
     target_spacing: Tuple[float, float, float],
     processes: int,
@@ -127,9 +129,7 @@ def predict_case(
         processes: The number of processes to use for parallel processing.
         min_rel_particle_size: The minimum relative particle size used for filtering.
         zscore_norm: The type of normalization to use.
-
-    Returns:
-        None
+        batch_size: The batch size to use during inference.
     """
     print("Starting inference of sample: ", name)
     load_filepath = join(load_dir, "{}.zarr".format(name))
@@ -180,6 +180,8 @@ def setup_folder_structure(
     return pred_softmax_filepath, pred_border_core_filepath, pred_border_core_tmp_filepath, pred_instance_filepath
 
 
+from skimage import transform as ski_transform
+
 def predict(
     load_filepath: str,
     pred_softmax_filepath: str,
@@ -219,9 +221,7 @@ def predict(
         processes: The number of processes to use for parallel processing.
         min_rel_particle_size: The minimum relative particle size used for filtering.
         zscore: The z-score normalization values.
-
-    Returns:
-        None
+        batch_size: The batch size to use during inference.
     """
     try:
         img = zarr.open(load_filepath, mode='r')
@@ -314,6 +314,7 @@ def create_sampler_and_aggregator(
         source_chunk_size: The source chunk size.
         resized_chunk_size: The resized chunk size.
         target_spacing: The target spacing in millimeters.
+        batch_size: The batch size to use during inference.
 
     Returns:
         sampler: The data sampler.
