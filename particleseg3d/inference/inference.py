@@ -22,23 +22,24 @@ import numpy_indexed as npi
 from typing import List, Tuple, Any, Optional, Dict, Type
 
 
-def setup_model(model_dir: str, folds: List[int]) -> Tuple[pl.Trainer, Nnunet, Any]:
+def setup_model(model_dir: str, folds: List[int], trainer: str = "nnUNetTrainerV2_slimDA5_touchV5__nnUNetPlansv2.1") -> Tuple[pl.Trainer, Nnunet, Any]:
     """
     Set up the model for inference.
 
     Args:
         model_dir: The directory containing the model files.
         folds: The folds to use for inference.
+        trainer: The name of the trainer.
 
     Returns:
         trainer: The PyTorch Lightning Trainer object.
         model: The initialized Nnunet model.
         config: The model configuration.
     """
-    with open(join(model_dir, "plans.pkl"), 'rb') as handle:
+    with open(join(model_dir, trainer, "plans.pkl"), 'rb') as handle:
         config = pickle.load(handle)
 
-    model = Nnunet(model_dir, folds=folds, nnunet_trainer="nnUNetTrainerV2_slimDA5_touchV5__nnUNetPlansv2.1", configuration="3d_fullres")
+    model = Nnunet(join(model_dir, trainer), folds=folds, nnunet_trainer=trainer, configuration="3d_fullres")
     model.eval()
     trainer = pl.Trainer(gpus=1, precision=16, logger=False)
     return trainer, model, config
@@ -53,6 +54,7 @@ def predict_cases(
     config: Any,
     target_particle_size: Tuple[float, float, float],
     target_spacing: Tuple[float, float, float],
+    batch_size: int,
     processes: int,
     min_rel_particle_size: float,
     zscore_norm: str
@@ -76,14 +78,20 @@ def predict_cases(
     Returns:
         None
     """
+    image_dir = join(load_dir, "images_preprocessed")
     metadata_filepath = join(load_dir, "metadata.json")
     zscore_filepath = join(load_dir, "zscore.json")
 
+    target_particle_size = [target_particle_size] * 3
+    target_spacing = [target_spacing] * 3
+
     if names is None:
-        names = utils.load_filepaths(load_dir, return_path=False, return_extension=False)
+        names = utils.load_filepaths(image_dir, return_path=False, return_extension=False)
+
+    print("Samples: ", names)
 
     for name in tqdm(names, desc="Inference Query"):
-        predict_case(load_dir, save_dir, name, metadata_filepath, zscore_filepath, trainer, model, config, target_particle_size, target_spacing, processes, min_rel_particle_size, zscore_norm)
+        predict_case(image_dir, save_dir, name, metadata_filepath, zscore_filepath, trainer, model, config, target_particle_size, target_spacing, processes, min_rel_particle_size, zscore_norm, batch_size)
 
 
 def predict_case(
@@ -99,7 +107,8 @@ def predict_case(
     target_spacing: Tuple[float, float, float],
     processes: int,
     min_rel_particle_size: float,
-    zscore_norm: str
+    zscore_norm: str,
+    batch_size: int
 ) -> None:
     """
     Perform inference on a single case.
@@ -123,7 +132,7 @@ def predict_case(
         None
     """
     print("Starting inference of sample: ", name)
-    load_filepath = join(load_dir, "images", "{}.zarr".format(name))
+    load_filepath = join(load_dir, "{}.zarr".format(name))
     pred_softmax_filepath, pred_border_core_filepath, pred_border_core_tmp_filepath, pred_instance_filepath = setup_folder_structure(save_dir, name)
 
     with open(metadata_filepath) as f:
@@ -139,7 +148,7 @@ def predict_case(
     source_spacing = metadata[name]["spacing"]
 
     predict(load_filepath, pred_softmax_filepath, pred_border_core_filepath, pred_border_core_tmp_filepath, pred_instance_filepath, target_spacing, target_particle_size_in_mm, target_particle_size_in_pixel, target_patch_size_in_pixel,
-            source_spacing, source_particle_size, trainer, model, processes, min_rel_particle_size, zscore)
+            source_spacing, source_particle_size, trainer, model, processes, min_rel_particle_size, zscore, batch_size)
 
 
 def setup_folder_structure(
@@ -187,7 +196,8 @@ def predict(
     model: Nnunet,
     processes: int,
     min_rel_particle_size: float,
-    zscore: Dict[str, Any]
+    zscore: Dict[str, Any],
+    batch_size: int
 ) -> None:
     """
     Perform the prediction for a single case.
@@ -222,7 +232,7 @@ def predict(
     source_patch_size_in_pixel, source_chunk_size, resized_image_shape, resized_chunk_size = compute_zoom(img, source_spacing, source_particle_size, target_spacing, target_particle_size_in_mm, target_patch_size_in_pixel)
     img, crop_slices = pad_image(img, source_patch_size_in_pixel)
     source_patch_size_in_pixel, source_chunk_size, resized_image_shape, resized_chunk_size = compute_zoom(img, source_spacing, source_particle_size, target_spacing, target_particle_size_in_mm, target_patch_size_in_pixel)
-    sampler, aggregator, chunked = create_sampler_and_aggregator(img, pred_border_core_filepath, source_patch_size_in_pixel, target_patch_size_in_pixel, resized_image_shape, source_chunk_size, resized_chunk_size, target_spacing)
+    sampler, aggregator, chunked = create_sampler_and_aggregator(img, pred_border_core_filepath, source_patch_size_in_pixel, target_patch_size_in_pixel, resized_image_shape, source_chunk_size, resized_chunk_size, target_spacing, batch_size)
 
     model.prediction_setup(aggregator, chunked, zscore)
     trainer.predict(model, dataloaders=sampler)
@@ -289,7 +299,8 @@ def create_sampler_and_aggregator(
     resized_image_shape: Any,
     source_chunk_size: Any,
     resized_chunk_size: Any,
-    target_spacing: Tuple[float, float, float]
+    target_spacing: Tuple[float, float, float],
+    batch_size: int
 ) -> Tuple[Any, Any, bool]:
     """
     Create the sampler and aggregator for prediction.
@@ -310,7 +321,6 @@ def create_sampler_and_aggregator(
         chunked: A flag indicating if chunked processing is used.
     """
     region_class_order = None
-    batch_size = 6
     num_workers = 12
     num_channels = 3
     if np.prod(resized_image_shape) < 1000*1000*500:
@@ -506,15 +516,16 @@ def compute_patch_size(
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', "--input", required=True,
-                        help="Absolute input path to the base folder that contains the dataset structured in the form of the directories 'images' and 'instance_seg' and the files metadata.json and zscore.json.")
+                        help="Absolute input path to the base folder that contains the dataset structured in the form of the directories 'images_preprocessed' and the files metadata.json and zscore.json.")
     parser.add_argument('-o', "--output", required=True, help="Absolute output path to the save folder.")
-    parser.add_argument('-m', "--model", required=True, help="Absolute path to the model directory.")
+    parser.add_argument('-m', "--model", required=True, help="Absolute path to the model directory. Example: /path/to/model/Task310_particle_seg")
     parser.add_argument('-n', "--name", required=False, type=str, nargs="+", help="The name(s) without extension of the image(s) that should be used for inference. Multiple names must be separated by spaces.")
-    parser.add_argument('-t', "--task", required=False, default=310, type=int, help="The task ID.")
-    parser.add_argument('-target_particle_size', default=(60, 60, 60), required=False, type=float, nargs=3,
-                        help="The target particle size in pixels given as three numbers separate by spaces.")
-    parser.add_argument('-target_spacing', default=(0.1, 0.1, 0.1), required=False, type=float, nargs=3,
-                        help="The target spacing in millimeters given as three numbers separate by spaces.")
+    parser.add_argument('-target_particle_size', default=60, required=False, type=int,
+                        help="(Optional) The target particle size in pixels given as three numbers separate by spaces.")
+    parser.add_argument('-target_spacing', default=0.1, required=False, type=float,
+                        help="(Optional) The target spacing in millimeters given as three numbers separate by spaces.")
+    parser.add_argument('-batch_size', default=6, required=False, type=int,
+                        help="(Optional) The batch size to use during each inference iteration. A higher batch size decreases inference time, but increases the required GPU memory.")
     parser.add_argument('-f', "--fold", required=False, default=(0, 1, 2, 3, 4), type=int, nargs="+", help="The folds to use. 0, 1, 2, 3, 4 or a combination.")
     parser.add_argument('-p', '--processes', required=False, default=12, type=int, help="Number of processes to use for parallel processing. None to disable multiprocessing.")
     parser.add_argument("-min_rel_particle_size", required=False, default=0.005, type=float, help="Minimum relative particle size used for filtering.")
@@ -522,7 +533,5 @@ if __name__ == '__main__':
                         help="(Optional) The type of normalization to use. Either 'global_zscore' or 'local_zscore'.")
     args = parser.parse_args()
 
-    print("Names: ", args.name)
-
     trainer, model, config = setup_model(args.model, args.fold)
-    predict_cases(args.input, args.output, args.name, trainer, model, config, args.target_particle_size, args.target_spacing, args.processes, args.min_rel_particle_size, args.zscore_norm)
+    predict_cases(args.input, args.output, args.name, trainer, model, config, args.target_particle_size, args.target_spacing, args.batch_size, args.processes, args.min_rel_particle_size, args.zscore_norm)
