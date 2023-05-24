@@ -10,6 +10,7 @@ import numpy_indexed as npi
 from skimage.morphology import cube
 from skimage.morphology import dilation
 from scipy.ndimage.morphology import distance_transform_edt
+from typing import Tuple, Optional, Type
 
 
 def border_core2instance(border_core: np.ndarray, pred_border_core_tmp_filepath: str, processes: Optional[int] = None, progressbar: bool = True, dtype: Type = np.uint16) -> Tuple[np.ndarray, int]:
@@ -41,7 +42,7 @@ def border_core2instance(border_core: np.ndarray, pred_border_core_tmp_filepath:
 
     border_core_component2instance = border_core_component2instance_dilation
 
-    if processes is None:
+    if processes is None or processes == 0:
         for index, (label, bbox) in enumerate(tqdm(props.items(), desc="Border-Core2Instance", disable=not progressbar)):
             filter_mask = component_seg[bbox] == label
             border_core_patch = copy.deepcopy(border_core[bbox])

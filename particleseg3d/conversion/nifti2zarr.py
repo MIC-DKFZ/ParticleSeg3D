@@ -13,9 +13,6 @@ def all_nifti2zarr(load_dir: str, save_dir: str) -> None:
     Args:
         load_dir (str): Directory where the nifti files are located.
         save_dir (str): Directory where the zarr files should be saved.
-
-    Returns:
-        None
     """
     names = utils.load_filepaths(load_dir, extension=".nii.gz", return_path=False, return_extension=False)
     for name in tqdm(names, desc="Image conversion"):
@@ -29,9 +26,6 @@ def nifti2zarr(load_filepath: str, save_filepath: str) -> None:
     Args:
         load_filepath (str): Path to the nifti file.
         save_dir (str): Path to where the zarr file should be saved.
-
-    Returns:
-        None
     """
     image = utils.load_nifti(load_filepath)
     image_zarr = zarr.open(save_filepath, shape=image.shape, mode='w')

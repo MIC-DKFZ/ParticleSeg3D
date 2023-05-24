@@ -16,9 +16,6 @@ def all_nifti2tiff(load_dir: str, save_dir: str, stack: bool, dtype: str) -> Non
         save_dir (str): Directory where the tiff files should be saved.
         stack (bool): True if all slices of a single image should be stacked and saved as a single tiff image.
         dtype (type): Data type of the output tiff file.
-
-    Returns:
-        None
     """
     names = utils.load_filepaths(load_dir, extension=".nii.gz", return_path=False, return_extension=False)
     for name in tqdm(names, desc="Image conversion"):
@@ -36,9 +33,6 @@ def nifti2tiff(load_filepath: str, save_dir: str, name: str, dtype: str, stack: 
         is_seg (bool): True if the nifti file contains a segmentation.
         stack (bool): True if all slices of the image should be stacked and saved as a single tiff image.
         dtype (type): Data type of the output tiff file.
-
-    Returns:
-        None
     """
     image = utils.load_nifti(load_filepath)
     image = image.astype(eval(dtype))

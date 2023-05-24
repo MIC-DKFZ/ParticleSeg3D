@@ -15,9 +15,6 @@ def tiff2nifti(load_dir: str, save_dir: str, spacing: Tuple[float, float, float]
             save_dir (str): Directory where the nifti file should be saved.
             spacing (Tuple[float, float, float]): Voxel spacing in x, y, and z directions.
             name (str): Name of the nifti file.
-
-        Returns:
-            None
         """
     print("Reading filenames for {}...".format(name))
     filenames = utils.load_filepaths(join(load_dir, name), extension=["tif", "tiff", "TIF", "TIFF"])

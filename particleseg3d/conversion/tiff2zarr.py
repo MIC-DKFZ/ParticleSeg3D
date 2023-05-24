@@ -14,15 +14,15 @@ def tiff2zarr(load_dir: str, save_dir: str) -> None:
     Args:
         load_dir (str): Path to the tiff files.
         save_dir (str): Path to where the zarr file should be saved.
-
-    Returns:
-        None
     """
     name = os.path.basename(os.path.normpath(load_dir))
     filepaths = utils.load_filepaths(load_dir, extension=["tif", "tiff", "TIF", "TIFF"])
-    image = tifffile.imread(filepaths)
-    image_zarr = zarr.open(join(save_dir, name + ".zarr"), shape=image.shape, mode='w')
-    image_zarr[...] = image
+    image_shape = tifffile.imread(filepaths[0]).shape
+    image_shape = (len(filepaths), *image_shape)
+    image_zarr = zarr.open(join(save_dir, name + ".zarr"), shape=image_shape, mode='w')
+    for i, filepath in enumerate(tqdm(filepaths)):
+        image_slice = tifffile.imread(filepath)    
+        image_zarr[i] = image_slice
 
 
 if __name__ == '__main__':

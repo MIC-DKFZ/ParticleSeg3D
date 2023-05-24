@@ -77,7 +77,7 @@ def predict_cases(
         min_rel_particle_size: The minimum relative particle size used for filtering.
         zscore_norm: The type of normalization to use.
     """
-    image_dir = join(load_dir, "images_preprocessed")
+    image_dir = join(load_dir, "images")
     metadata_filepath = join(load_dir, "metadata.json")
     zscore_filepath = join(load_dir, "zscore.json")
 
@@ -514,19 +514,19 @@ def compute_patch_size(
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', "--input", required=True,
-                        help="Absolute input path to the base folder that contains the dataset structured in the form of the directories 'images_preprocessed' and the files metadata.json and zscore.json.")
+                        help="Absolute input path to the base folder that contains the dataset structured in the form of the directories 'images' and the files metadata.json and zscore.json.")
     parser.add_argument('-o', "--output", required=True, help="Absolute output path to the save folder.")
     parser.add_argument('-m', "--model", required=True, help="Absolute path to the model directory. Example: /path/to/model/Task310_particle_seg")
-    parser.add_argument('-n', "--name", required=False, type=str, nargs="+", help="The name(s) without extension of the image(s) that should be used for inference. Multiple names must be separated by spaces.")
+    parser.add_argument('-n', "--name", required=False, type=str, nargs="+", help="(Optional) The name(s) without extension of the image(s) that should be used for inference. Multiple names must be separated by spaces.")
     parser.add_argument('-target_particle_size', default=60, required=False, type=int,
                         help="(Optional) The target particle size in pixels given as three numbers separate by spaces.")
     parser.add_argument('-target_spacing', default=0.1, required=False, type=float,
                         help="(Optional) The target spacing in millimeters given as three numbers separate by spaces.")
+    parser.add_argument('-f', "--fold", required=False, default=(0, 1, 2, 3, 4), type=int, nargs="+", help="(Optional) The folds to use. 0, 1, 2, 3, 4 or a combination.")
     parser.add_argument('-batch_size', default=6, required=False, type=int,
                         help="(Optional) The batch size to use during each inference iteration. A higher batch size decreases inference time, but increases the required GPU memory.")
-    parser.add_argument('-f', "--fold", required=False, default=(0, 1, 2, 3, 4), type=int, nargs="+", help="The folds to use. 0, 1, 2, 3, 4 or a combination.")
-    parser.add_argument('-p', '--processes', required=False, default=12, type=int, help="Number of processes to use for parallel processing. None to disable multiprocessing.")
-    parser.add_argument("-min_rel_particle_size", required=False, default=0.005, type=float, help="Minimum relative particle size used for filtering.")
+    parser.add_argument('-p', '--processes', required=False, default=12, type=int, help="(Optional) Number of processes to use for parallel processing. Zero to disable multiprocessing.")
+    parser.add_argument("-min_rel_particle_size", required=False, default=0.005, type=float, help="(Optional) Minimum relative particle size used for filtering.")
     parser.add_argument('-zscore_norm', required=False, default="global_zscore", type=str,
                         help="(Optional) The type of normalization to use. Either 'global_zscore' or 'local_zscore'.")
     args = parser.parse_args()
