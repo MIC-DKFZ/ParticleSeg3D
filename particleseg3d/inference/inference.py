@@ -93,9 +93,6 @@ def predict_cases(
         predict_case(image_dir, save_dir, name, metadata_filepath, zscore_filepath, trainer, model, config, target_particle_size, target_spacing, processes, min_rel_particle_size, zscore_norm, batch_size)
 
 
-from pathlib import Path
-import shutil
-
 def predict_case(
     load_dir: str,
     save_dir: str,
