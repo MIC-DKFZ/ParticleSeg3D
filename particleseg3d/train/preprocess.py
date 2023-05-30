@@ -4,7 +4,7 @@ from tqdm import tqdm
 from particleseg3d.utils import utils
 import json
 from os.path import join
-from particleseg3d.preprocess.instance2border_core import instance2border_core
+from particleseg3d.train.instance2border_core import instance2border_core
 import zarr
 from acvl_utils.miscellaneous.ptqdm import ptqdm
 import pickle
@@ -205,7 +205,7 @@ def gen_regionprops_single(instance_seg: np.ndarray) -> Tuple[Dict[int, Tuple[in
     return props_filtered, len(props), len(props_filtered)
 
 
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', "--input", required=True,
                         help="Absolute input path to the base folder that contains the dataset structured in the form of the directories 'images' and 'instance_seg' and the files metadata.json and zscore.json.")
@@ -236,3 +236,7 @@ if __name__ == '__main__':
     dataset_name = "Task{}_ParticleSeg3D".format(str(args.task).zfill(3))
 
     preprocess_all(args.input, names, args.output, args.target_spacing, args.target_particle_size, dataset_name, args.processes, args.thickness, args.zscore_norm, not args.disable_gpu)
+
+
+if __name__ == '__main__':
+    main()
