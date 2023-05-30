@@ -47,6 +47,8 @@ setup(
             'ps3d_inference = particleseg3d.inference.inference:main',
             'ps3d_tiff2zarr = particleseg3d.conversion.tiff2zarr:main',
             'ps3d_zarr2tiff = particleseg3d.conversion.zarr2tiff:main',
+            'ps3d_tiff2nifti = particleseg3d.conversion.tiff2nifti:main',
+            'ps3d_nifti2tiff = particleseg3d.conversion.nifti2tiff:main',
             'ps3d_train_preprocess = particleseg3d.train.preprocess:main',
         ],
     },

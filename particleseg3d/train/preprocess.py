@@ -15,7 +15,7 @@ from typing import List, Tuple, Dict, Any
 
 def preprocess_all(load_dir: str, names: List[str], save_dir: str, target_spacing: float,
                    target_particle_size_in_pixel: int, dataset_name: str, processes: int,
-                   border_thickness_in_pixel: int, zscore: str, gpu: bool) -> None:
+                   border_thickness_in_pixel: int, gpu: bool, zscore: Tuple[float, float]) -> None:
     """
     Preprocesses all the samples in the dataset.
 
@@ -27,17 +27,14 @@ def preprocess_all(load_dir: str, names: List[str], save_dir: str, target_spacin
     :param dataset_name: The name of the preprocessed dataset.
     :param processes: Number of processes to use for parallel processing. None to disable multiprocessing.
     :param border_thickness_in_pixel: Border thickness in pixel.
-    :param zscore: The type of normalization to use. Either 'global_zscore' or 'local_zscore'.
     :param gpu: Flag indicating whether to use the GPU for preprocessing.
+    :param zscore: The z-score used for intensity normalization.
     """
     metadata_load_filepath = join(load_dir, "metadata.json")
     zscore_load_filepath = join(load_dir, "zscore.json")
 
     with open(metadata_load_filepath) as f:
         metadata = json.load(f)
-
-    with open(zscore_load_filepath) as f:
-        zscore_metadata = json.load(f)
 
     target_spacing = [target_spacing] * 3
     target_particle_size_in_pixel = [target_particle_size_in_pixel] * 3
@@ -61,16 +58,16 @@ def preprocess_all(load_dir: str, names: List[str], save_dir: str, target_spacin
     if processes is None:
         for i in tqdm(range(len(names))):
             preprocess_single(i, names=names, image_load_filepaths=image_load_filepaths, seg_load_filepaths=seg_load_filepaths, metadata_load_filepath=metadata_load_filepath,
-                      zscore_metadata=zscore_metadata, image_save_dir=image_save_dir, semantic_seg_save_dir=semantic_seg_save_dir, instance_seg_save_dir=instance_seg_save_dir,
+                      image_save_dir=image_save_dir, semantic_seg_save_dir=semantic_seg_save_dir, instance_seg_save_dir=instance_seg_save_dir,
                       semantic_seg_zarr_save_dir=semantic_seg_zarr_save_dir, instance_seg_zarr_save_dir=instance_seg_zarr_save_dir, target_spacing=target_spacing,
                       target_particle_size_in_pixel=target_particle_size_in_pixel,
-                      border_thickness_in_pixel=border_thickness_in_pixel, zscore=zscore, gpu=gpu)
+                      border_thickness_in_pixel=border_thickness_in_pixel, gpu=gpu, zscore=zscore)
     else:
         ptqdm(preprocess_single, range(len(names)), processes, names=names, image_load_filepaths=image_load_filepaths, seg_load_filepaths=seg_load_filepaths, metadata_load_filepath=metadata_load_filepath,
-                  zscore_metadata=zscore_metadata, image_save_dir=image_save_dir, semantic_seg_save_dir=semantic_seg_save_dir, instance_seg_save_dir=instance_seg_save_dir,
+                  image_save_dir=image_save_dir, semantic_seg_save_dir=semantic_seg_save_dir, instance_seg_save_dir=instance_seg_save_dir,
                   semantic_seg_zarr_save_dir=semantic_seg_zarr_save_dir, instance_seg_zarr_save_dir=instance_seg_zarr_save_dir, target_spacing=target_spacing,
                   target_particle_size_in_pixel=target_particle_size_in_pixel,
-                  border_thickness_in_pixel=border_thickness_in_pixel, zscore=zscore, gpu=gpu)
+                  border_thickness_in_pixel=border_thickness_in_pixel, gpu=gpu, zscore=zscore)
 
     utils.generate_dataset_json(join(save_dir, dataset_name, 'dataset.json'), join(save_dir, dataset_name, "imagesTr"), None, ("noNorm",), {0: 'bg', 1: 'core', 2: 'border'}, dataset_name)
 
@@ -82,7 +79,6 @@ def preprocess_single(i: int,
                       image_load_filepaths: List[str],
                       seg_load_filepaths: List[str],
                       metadata_load_filepath: str,
-                      zscore_metadata: dict,
                       image_save_dir: str,
                       semantic_seg_save_dir: str,
                       instance_seg_save_dir: str,
@@ -91,8 +87,8 @@ def preprocess_single(i: int,
                       target_spacing: List[float],
                       target_particle_size_in_pixel: List[int],
                       border_thickness_in_pixel: int,
-                      zscore: str,
-                      gpu: bool) -> None:
+                      gpu: bool,
+                      zscore: Tuple[float, float]) -> None:
     """
     Preprocess a single 3D particle segmentation image.
 
@@ -102,7 +98,6 @@ def preprocess_single(i: int,
         image_load_filepaths (List[str]): Paths to the input 3D particle segmentation image files.
         seg_load_filepaths (List[str]): Paths to the input instance segmentation image files.
         metadata_load_filepath (str): Path to the metadata file.
-        zscore_metadata (dict): Dictionary containing information about the z-score normalization.
         image_save_dir (str): Path to the directory to save the preprocessed images.
         semantic_seg_save_dir (str): Path to the directory to save the semantic segmentation images.
         instance_seg_save_dir (str): Path to the directory to save the instance segmentation images.
@@ -111,8 +106,8 @@ def preprocess_single(i: int,
         target_spacing (List[float]): Target spacing in millimeters.
         target_particle_size_in_pixel (List[int]): Target particle size in pixels.
         border_thickness_in_pixel (int): Border thickness in pixels.
-        zscore (str): The type of normalization to use. Either 'global_zscore' or 'local_zscore'.
         gpu (bool): If True, use GPU for resampling.
+        zscore: The z-score used for intensity normalization.
 
     Returns:
         None
@@ -127,7 +122,7 @@ def preprocess_single(i: int,
     image = utils.load_nifti(image_load_filepath)
     instance_seg = utils.load_nifti(seg_load_filepath)
 
-    zscore = zscore_metadata["global_zscore"] if zscore == "global_zscore" else zscore_metadata["local_zscore"][name]
+    zscore = {"mean": zscore[0], "std": zscore[1]}
     image = utils.standardize(image, zscore)
 
     image_shape = image.shape
@@ -210,6 +205,7 @@ def main():
     parser.add_argument('-i', "--input", required=True,
                         help="Absolute input path to the base folder that contains the dataset structured in the form of the directories 'images' and 'instance_seg' and the files metadata.json and zscore.json.")
     parser.add_argument('-o', "--output", required=True, help="Absolute output path to the preprocessed dataset directory.")
+    parser.add_argument('-z', '--zscore', required=True, type=float, nargs=2, help="The z-score used for intensity normalization.")
     parser.add_argument('-n', "--name", required=False, type=str, default=None, nargs="+", help="(Optional) The name(s) without extension of the image(s) that should be used for training. Multiple names must be separated by spaces.")
     parser.add_argument('-t', '--task', required=False, default=500, type=int, help="(Optional) The task id that should be assigned to this dataset.")
     parser.add_argument('-target_particle_size', default=60, required=False, type=int,
@@ -218,8 +214,6 @@ def main():
                         help="(Optional) The target spacing in millimeters given as three numbers separate by spaces.")
     parser.add_argument('-p', '--processes', required=False, default=None, type=int, help="(Optional) Number of processes to use for parallel processing. None to disable multiprocessing.")
     parser.add_argument('-thickness', required=False, default=3, type=int, help="(Optional) Border thickness in pixel.")
-    parser.add_argument('-zscore_norm', required=False, default="global_zscore", type=str,
-                        help="(Optional) The type of normalization to use. Either 'global_zscore' or 'local_zscore'.")
     parser.add_argument('--disable_gpu', required=False, default=False, action="store_true", help="(Optional) Disables use of the GPU for preprocessing.")
     args = parser.parse_args()
 
@@ -235,7 +229,7 @@ def main():
 
     dataset_name = "Task{}_ParticleSeg3D".format(str(args.task).zfill(3))
 
-    preprocess_all(args.input, names, args.output, args.target_spacing, args.target_particle_size, dataset_name, args.processes, args.thickness, args.zscore_norm, not args.disable_gpu)
+    preprocess_all(args.input, names, args.output, args.target_spacing, args.target_particle_size, dataset_name, args.processes, args.thickness, not args.disable_gpu, args.zscore)
 
 
 if __name__ == '__main__':

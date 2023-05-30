@@ -32,7 +32,7 @@ You should now have the ParticleSeg3D package installed in your Python environme
 ParticleSeg3D requires a trained model in order to run inference. The trained model can be downloaded [here](https://syncandshare.desy.de/index.php/s/id9D9pkATrFw65s). After downloading the weights, the weights need to be unpacked and saved at a location of your choosing.
 
 ### Conversion to Zarr
-To run inference on an image using ParticleSeg3D, the image must first be converted into the Zarr format. In case of a series of TIFF image files, this conversion can be accomplished using the following command from anywhere on the system:
+To run inference on an image using ParticleSeg3D, the image must first be converted into the Zarr format. The Zarr format suits our purposes well as it is designed for very large N-dimensional images. In case of a series of TIFF image files, this conversion can be accomplished using the following command from anywhere on the system:
 ```cmd
 ps3d_tiff2zarr -i /path/to/input -o /path/to/output
 ```
@@ -105,4 +105,45 @@ Here's a breakdown of relevant arguments you should provide:
 
 
 ## Usage - Training
-...
+
+### Conversion to Zarr
+To train a new ParticleSeg3D model on new training images, the training images must first be converted into the NIFTI format. The NIFTI format is required as input format by the nnU-Net. In case of a series of TIFF image files, this conversion can be accomplished using the following command from anywhere on the system:
+```cmd
+ps3d_tiff2nifti -i /path/to/input -o /path/to/output -s 0.1 0.1 0.1
+```
+
+Here's a breakdown of relevant arguments you should provide:
+- '-i', '--input': Required. Absolute input path to the folder that contains the TIFF image slices that should be converted to a Zarr image.
+- '-o', '--output': Required. Absolute output path to the folder that should be used to save the Zarr image.
+- '-s', '--spacing': Required. The image spacing given as three numbers separate by spaces.
+
+### Metadata preparation
+ParticleSeg3D requires the image spacing and a rough mean particle diameter size in millimeter of each image that should be used for training. 
+This information needs to be provided in the form of a metadata.json as shown in this example:
+```json
+{
+    "Ore1_Zone3_Concentrate": {
+        "spacing": 0.01,
+        "particle_size": 0.29292
+    },
+    "Recycling1": {
+        "spacing": 0.011,
+        "particle_size": 0.5082
+    },
+    "Ore2_PS850_VS10": {
+        "spacing": 0.01,
+        "particle_size": 1.2874
+    },
+    "Ore5": {
+        "spacing": 0.0055,
+        "particle_size": 0.2296
+    },
+    ...
+}
+```
+
+### Z-Score preparation
+ParticleSeg3D performs Z-score intensity normalization and thus requires the global mean and standard deviation of the entire dataset. This can either be exactly computed over all voxel of all images combined of estimated by randomly sampling a subset of voxels from all images. The second option might be more convinient on larger images.
+
+### Dataset preprocessing
+
