@@ -9,7 +9,7 @@ from particleseg3d.inference.sampler import SamplerDataset, GridSampler, ResizeS
 from particleseg3d.inference.aggregator import WeightedSoftmaxAggregator, ResizeChunkedWeightedSoftmaxAggregator
 import numpy as np
 from tqdm import tqdm
-from model_nnunet import Nnunet
+from particleseg3d.inference.model_nnunet import Nnunet
 import json
 from particleseg3d.inference.border_core2instance import border_core2instance
 from skimage import transform as ski_transform
@@ -511,7 +511,7 @@ def compute_patch_size(
     return target_patch_size_in_pixel, source_patch_size_in_pixel, size_conversion_factor
 
 
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', "--input", required=True,
                         help="Absolute input path to the base folder that contains the dataset structured in the form of the directories 'images' and the files metadata.json and zscore.json.")
@@ -533,3 +533,7 @@ if __name__ == '__main__':
 
     trainer, model, config = setup_model(args.model, args.fold)
     predict_cases(args.input, args.output, args.name, trainer, model, config, args.target_particle_size, args.target_spacing, args.batch_size, args.processes, args.min_rel_particle_size, args.zscore_norm)
+
+
+if __name__ == '__main__':
+    main()

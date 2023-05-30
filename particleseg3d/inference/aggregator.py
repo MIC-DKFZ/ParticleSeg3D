@@ -1,5 +1,5 @@
 import numpy as np
-from sampler import BasicGridSampler, GridSampler
+from particleseg3d.inference.sampler import BasicGridSampler, GridSampler
 from acvl_utils.array_manipulation.slicer import slicer
 from scipy.ndimage.filters import gaussian_filter
 from collections import defaultdict
