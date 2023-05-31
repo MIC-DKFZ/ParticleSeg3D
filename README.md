@@ -181,7 +181,7 @@ After the dataset has been preprocessed the training of the nnU-Net model can co
 
 ## License
 
-Distributed under the terms of the [Apache Software License 2.0] license,
+Distributed under the terms of the [Apache Software License 2.0](http://www.apache.org/licenses/LICENSE-2.0) license,
 "ParticleSeg3D" is free and open source software
 
 # Acknowledgements
