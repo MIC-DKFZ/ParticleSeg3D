@@ -174,3 +174,21 @@ Here's a breakdown of relevant arguments you should provide:
 - '-i', '--input': Required. Absolute input path to the base folder that contains the dataset structured in the form of the directories 'images' and 'instance_seg' and the file metadata.json.
 - '-o', '--output': Required. Absolute output path to the preprocessed dataset directory.
 - '-z', '--zscore': Required. The z-score used for intensity normalization.
+
+### nnU-Net training
+
+After the dataset has been preprocessed the training of the nnU-Net model can commence. In order to this, it is best to follow the instructions from the official nnU-Net V1 [documentation](https://github.com/MIC-DKFZ/nnUNet/tree/nnunetv1). Once the training finished the trained model can be used for inference on new images.
+
+## License
+
+Distributed under the terms of the [Apache Software License 2.0] license,
+"ParticleSeg3D" is free and open source software
+
+# Acknowledgements
+<img src="https://github.com/MIC-DKFZ/ParticleSeg3D/raw/main/HI_Logo.png" height="100px" />
+
+<img src="https://github.com/MIC-DKFZ/ParticleSeg3D/raw/main/dkfz_logo.png" height="100px" />
+
+ParticleSeg3D is developed and maintained by the Applied Computer Vision Lab (ACVL) of [Helmholtz Imaging](http://helmholtz-imaging.de) 
+and the [Division of Medical Image Computing](https://www.dkfz.de/en/mic/index.php) at the 
+[German Cancer Research Center (DKFZ)](https://www.dkfz.de/en/index.html).
