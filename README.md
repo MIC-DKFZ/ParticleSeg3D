@@ -8,6 +8,10 @@
 
 ParticleSeg3D is an instance segmentation method that extracts individual particles from large micro CT images taken from mineral samples embedded in an epoxy matrix. It is built on the powerful nnU-Net framework, introduces a particle size normalization, and makes use of a border-core representation to enable instance segmentation.
 
+<p align="center">
+  <img width="500" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMDVjOThmZGU3ZmM1Yzg0YzFlNDQyYzViOWIyODdlYTE1ZmNjM2FiNSZlcD12MV9pbnRlcm5hbF9naWZzX2dpZklkJmN0PWc/GxoBNxpCt79Rxt0Ezj/giphy.gif">
+</p>
+
 ## Features
 - Robust instance segmentation of mineral particles in micro CT images
 - Application of nnU-Net framework for reliable and scalable image processing
