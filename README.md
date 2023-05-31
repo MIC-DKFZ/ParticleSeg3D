@@ -21,20 +21,10 @@ ParticleSeg3D is an instance segmentation method that extracts individual partic
 - Can be applied to a wide variety of particle types, without additional manual annotations or retraining
 
 ## Installation
-To install the ParticleSeg3D project, you'll first need to clone the repository to your local machine.
+You can install `ParticleSeg3D` via [pip]:
 
-1. Open your terminal and clone the repository:
-    ```cmd
-    git clone https://github.com/MIC-DKFZ/ParticleSeg3D.git
-    ```
-2. Navigate into the cloned repository:
-    ```cmd
-    cd ParticleSeg3D
-    ```
-3. Install the project using pip:
-    ```cmd
-    pip install .
-    ```
+    pip install ParticleSeg3D
+
 You should now have the ParticleSeg3D package installed in your Python environment, and you'll be able to use all ParticleSeg3D commands from anywhere on your system.
 
 If you intend to train ParticleSeg3D on new data, you will need to additionally install a modified version of the nnU-Net V1:
