@@ -68,7 +68,7 @@ This information needs to be provided in the form of a metadata.json as shown in
 
 
 ### Inference
-You can run inference on Zarr images from anywhere on the system using the ps3d_inference command. The Zarr images need to be located in a folder named 'images' and the 'metadata.json' needs to be placed at it parent folder such that the folder structure looks like this:
+You can run inference on Zarr images from anywhere on the system using the ps3d_inference command. The Zarr images need to be located in a folder named 'images' and the 'metadata.json' needs to be placed next to the folder such that the folder structure looks like this:
 ```
 .
 ├── metadata.json
@@ -106,7 +106,7 @@ Here's a breakdown of relevant arguments you should provide:
 
 ## Usage - Training
 
-### Conversion to Zarr
+### Conversion to NIFTI
 To train a new ParticleSeg3D model on new training images, the training images must first be converted into the NIFTI format. The NIFTI format is required as input format by the nnU-Net. In case of a series of TIFF image files, this conversion can be accomplished using the following command from anywhere on the system:
 ```cmd
 ps3d_tiff2nifti -i /path/to/input -o /path/to/output -s 0.1 0.1 0.1
@@ -146,4 +146,31 @@ This information needs to be provided in the form of a metadata.json as shown in
 ParticleSeg3D performs Z-score intensity normalization and thus requires the global mean and standard deviation of the entire dataset. This can either be exactly computed over all voxel of all images combined of estimated by randomly sampling a subset of voxels from all images. The second option might be more convinient on larger images.
 
 ### Dataset preprocessing
+The NIFTI images and reference instance segmentations need to be preprocessed into the for the nnU-Net expected dataset format. The  NIFTI images need to be located in a folder named 'images', the NIFTI instance segmentations in a folder named 'instance_seg' and the 'metadata.json' needs to be placed next to both folders. Further, images and their respective instance segmentations should have the same name.The folder structure should look like this:
+```
+.
+├── metadata.json
+├── images
+│   ├── Ore1_Zone3_Concentrate.zarr
+│   ├── Recycling1.zarr
+│   ├── Ore2_PS850_VS10.zarr
+│   ├── Ore5.zarr
+│   └── ...
+└── instance_seg
+    ├── Ore1_Zone3_Concentrate.zarr
+    ├── Recycling1.zarr
+    ├── Ore2_PS850_VS10.zarr
+    ├── Ore5.zarr
+    └── ...
+```
 
+The dataset can then be preprocessed into nnU-Net format with the following command:
+```cmd
+ps3d_train_preprocess -i /path/to/input -o /path/to/output -z 0.12345 0.6789
+```
+
+Here's a breakdown of relevant arguments you should provide:
+
+- '-i', '--input': Required. Absolute input path to the base folder that contains the dataset structured in the form of the directories 'images' and 'instance_seg' and the file metadata.json.
+- '-o', '--output': Required. Absolute output path to the preprocessed dataset directory.
+- '-z', '--zscore': Required. The z-score used for intensity normalization.

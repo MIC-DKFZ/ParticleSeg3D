@@ -203,7 +203,7 @@ def gen_regionprops_single(instance_seg: np.ndarray) -> Tuple[Dict[int, Tuple[in
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', "--input", required=True,
-                        help="Absolute input path to the base folder that contains the dataset structured in the form of the directories 'images' and 'instance_seg' and the files metadata.json and zscore.json.")
+                        help="Absolute input path to the base folder that contains the dataset structured in the form of the directories 'images' and 'instance_seg' and the file metadata.json.")
     parser.add_argument('-o', "--output", required=True, help="Absolute output path to the preprocessed dataset directory.")
     parser.add_argument('-z', '--zscore', required=True, type=float, nargs=2, help="The z-score used for intensity normalization.")
     parser.add_argument('-n', "--name", required=False, type=str, default=None, nargs="+", help="(Optional) The name(s) without extension of the image(s) that should be used for training. Multiple names must be separated by spaces.")
