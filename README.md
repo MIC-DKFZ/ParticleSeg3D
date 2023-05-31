@@ -1,4 +1,11 @@
 # ParticleSeg3D
+
+[![License Apache Software License 2.0](https://img.shields.io/pypi/l/ParticleSeg3D.svg?color=green)](https://github.com/Karol-G/ParticleSeg3D/raw/main/LICENSE)
+[![PyPI](https://img.shields.io/pypi/v/ParticleSeg3D.svg?color=green)](https://pypi.org/project/ParticleSeg3D)
+[![Python Version](https://img.shields.io/pypi/pyversions/ParticleSeg3D.svg?color=green)](https://python.org)
+[![tests](https://github.com/Karol-G/ParticleSeg3D/workflows/tests/badge.svg)](https://github.com/Karol-G/ParticleSeg3D/actions)
+[![codecov](https://codecov.io/gh/Karol-G/ParticleSeg3D/branch/main/graph/badge.svg)](https://codecov.io/gh/Karol-G/ParticleSeg3D)
+
 ParticleSeg3D is an instance segmentation method that extracts individual particles from large micro CT images taken from mineral samples embedded in an epoxy matrix. It is built on the powerful nnU-Net framework, introduces a particle size normalization, and makes use of a border-core representation to enable instance segmentation.
 
 ## Features
