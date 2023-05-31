@@ -33,6 +33,12 @@ To install the ParticleSeg3D project, you'll first need to clone the repository 
     ```
 You should now have the ParticleSeg3D package installed in your Python environment, and you'll be able to use all ParticleSeg3D commands from anywhere on your system.
 
+If you intend to train ParticleSeg3D on new data, you will need to additionally install a modified version of the nnU-Net V1:
+```cmd
+pip install git+https://github.com/MIC-DKFZ/nnUNet.git@ParticleSeg3D
+```
+
+
 ## Usage - Inference
 
 ### Model download
