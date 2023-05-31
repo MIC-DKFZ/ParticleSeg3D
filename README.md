@@ -21,7 +21,7 @@ ParticleSeg3D is an instance segmentation method that extracts individual partic
 - Can be applied to a wide variety of particle types, without additional manual annotations or retraining
 
 ## Installation
-You can install `ParticleSeg3D` via [pip]:
+You can install `ParticleSeg3D` via [pip](https://pypi.org/project/ParticleSeg3D/):
 
     pip install ParticleSeg3D
 
