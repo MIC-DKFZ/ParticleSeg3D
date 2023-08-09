@@ -31,7 +31,6 @@ def preprocess_all(load_dir: str, names: List[str], save_dir: str, target_spacin
     :param zscore: The z-score used for intensity normalization.
     """
     metadata_load_filepath = join(load_dir, "metadata.json")
-    zscore_load_filepath = join(load_dir, "zscore.json")
 
     with open(metadata_load_filepath) as f:
         metadata = json.load(f)
@@ -205,9 +204,10 @@ def main():
     parser.add_argument('-i', "--input", required=True,
                         help="Absolute input path to the base folder that contains the dataset structured in the form of the directories 'images' and 'instance_seg' and the file metadata.json.")
     parser.add_argument('-o', "--output", required=True, help="Absolute output path to the preprocessed dataset directory.")
-    parser.add_argument('-z', '--zscore', required=True, type=float, nargs=2, help="The z-score used for intensity normalization.")
     parser.add_argument('-n', "--name", required=False, type=str, default=None, nargs="+", help="(Optional) The name(s) without extension of the image(s) that should be used for training. Multiple names must be separated by spaces.")
     parser.add_argument('-t', '--task', required=False, default=500, type=int, help="(Optional) The task id that should be assigned to this dataset.")
+    parser.add_argument('-z', '--zscore', default=(5850.29762143569, 7078.294543817302), required=False, type=float, nargs=2,
+                        help="(Optional) The target spacing in millimeters given as three numbers separate by spaces.")
     parser.add_argument('-target_particle_size', default=60, required=False, type=int,
                         help="(Optional) The target particle size in pixels given as three numbers separate by spaces.")
     parser.add_argument('-target_spacing', default=0.1, required=False, type=float,
