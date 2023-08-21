@@ -5,7 +5,7 @@
 [![Python Version](https://img.shields.io/pypi/pyversions/ParticleSeg3D.svg?color=green)](https://python.org)
 [![codecov](https://codecov.io/gh/Karol-G/ParticleSeg3D/branch/main/graph/badge.svg)](https://codecov.io/gh/Karol-G/ParticleSeg3D)
 
-ParticleSeg3D is an instance segmentation method that extracts individual particles from large micro CT images taken from mineral samples embedded in an epoxy matrix. It is built on the powerful nnU-Net framework, introduces a particle size normalization, and makes use of a border-core representation to enable instance segmentation.
+[ParticleSeg3D](https://arxiv.org/abs/2301.13319) is an instance segmentation method that extracts individual particles from large micro CT images taken from mineral samples embedded in an epoxy matrix. It is built on the powerful nnU-Net framework, introduces a particle size normalization, and makes use of a border-core representation to enable instance segmentation.
 
 <p align="center">
   <img width="500" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMDVjOThmZGU3ZmM1Yzg0YzFlNDQyYzViOWIyODdlYTE1ZmNjM2FiNSZlcD12MV9pbnRlcm5hbF9naWZzX2dpZklkJmN0PWc/GxoBNxpCt79Rxt0Ezj/giphy.gif">
@@ -31,6 +31,9 @@ If you intend to train ParticleSeg3D on new data, you will need to additionally 
 pip install git+https://github.com/MIC-DKFZ/nnUNet.git@ParticleSeg3D
 ```
 
+## Dataset
+
+The sample dataset consisting of the whole CT images and the patch dataset with extracted patches from these samples alongside their respective instance segmentations can be found [here](https://syncandshare.desy.de/index.php/s/wjiDQ49KangiPj5).
 
 ## Usage - Inference
 
@@ -189,6 +192,21 @@ After the dataset has been preprocessed the training of the nnU-Net model can co
 
 Distributed under the terms of the [Apache Software License 2.0](http://www.apache.org/licenses/LICENSE-2.0) license,
 "ParticleSeg3D" is free and open source software
+
+# Citations
+
+If you are using ParticleSeg3D for your article, please consider citing our paper:
+
+```
+@misc{gotkowski2023work,
+      title={[Work in progress] Scalable, out-of-the box segmentation of individual particles from mineral samples acquired with micro CT}, 
+      author={Karol Gotkowski and Shuvam Gupta and Jose R. A. Godinho and Camila G. S. Tochtrop and Klaus H. Maier-Hein and Fabian Isensee},
+      year={2023},
+      eprint={2301.13319},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV}
+}
+```
 
 # Acknowledgements
 <img src="https://github.com/MIC-DKFZ/ParticleSeg3D/raw/main/HI_Logo.png" height="100px" />
