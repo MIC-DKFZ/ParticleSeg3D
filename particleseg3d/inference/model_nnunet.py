@@ -1,9 +1,7 @@
 import pytorch_lightning as pl
 from particleseg3d.utils import utils
-from nnunet.network_architecture.generic_UNet import Generic_UNet
 import torch.nn.functional as F
 from torch import nn
-from nnunet.network_architecture.initialization import InitWeights_He
 from typing import Any
 import numpy as np
 from os.path import join
@@ -11,6 +9,7 @@ from pathlib import Path
 import torch
 import json
 from typing import Tuple, Any, Optional, Dict
+from particleseg3d.utils.nnunet_utils import InitWeights_He, Generic_UNet
 
 
 class Nnunet(pl.LightningModule):
