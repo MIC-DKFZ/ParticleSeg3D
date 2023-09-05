@@ -221,7 +221,7 @@ def predict(
     source_patch_size_in_pixel, source_chunk_size, resized_image_shape, resized_chunk_size = compute_zoom(img, source_spacing, source_particle_size, target_spacing, target_particle_size_in_mm, target_patch_size_in_pixel)
     img, crop_slices = pad_image(img, source_patch_size_in_pixel)
     source_patch_size_in_pixel, source_chunk_size, resized_image_shape, resized_chunk_size = compute_zoom(img, source_spacing, source_particle_size, target_spacing, target_particle_size_in_mm, target_patch_size_in_pixel)
-    sampler, aggregator, chunked = create_sampler_and_aggregator(img, pred_border_core_filepath, source_patch_size_in_pixel, target_patch_size_in_pixel, resized_image_shape, source_chunk_size, resized_chunk_size, target_spacing, batch_size)
+    sampler, aggregator, chunked = create_sampler_and_aggregator(img, pred_border_core_filepath, source_patch_size_in_pixel, target_patch_size_in_pixel, resized_image_shape, source_chunk_size, resized_chunk_size, target_spacing, batch_size, processes)
 
     model.prediction_setup(aggregator, chunked, zscore)
     trainer.predict(model, dataloaders=sampler)
@@ -289,7 +289,8 @@ def create_sampler_and_aggregator(
     source_chunk_size: Any,
     resized_chunk_size: Any,
     target_spacing: Tuple[float, float, float],
-    batch_size: int
+    batch_size: int,
+    num_workers: int = 12
 ) -> Tuple[Any, Any, bool]:
     """
     Create the sampler and aggregator for prediction.
@@ -311,7 +312,6 @@ def create_sampler_and_aggregator(
         chunked: A flag indicating if chunked processing is used.
     """
     region_class_order = None
-    num_workers = 12
     num_channels = 3
     if np.prod(resized_image_shape) < 1000*1000*500:
         pred = zarr.open(pred_border_core_filepath, mode='w', shape=(num_channels, *resized_image_shape), chunks=(3, 64, 64, 64), dtype=np.float32)
