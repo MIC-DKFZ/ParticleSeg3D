@@ -290,7 +290,7 @@ def create_sampler_and_aggregator(
     resized_chunk_size: Any,
     target_spacing: Tuple[float, float, float],
     batch_size: int,
-    num_workers: int = 12
+    num_workers: int
 ) -> Tuple[Any, Any, bool]:
     """
     Create the sampler and aggregator for prediction.
@@ -519,7 +519,7 @@ def main():
     parser.add_argument('-f', "--fold", required=False, default=(0, 1, 2, 3, 4), type=int, nargs="+", help="(Optional) The folds to use. 0, 1, 2, 3, 4 or a combination.")
     parser.add_argument('-batch_size', default=6, required=False, type=int,
                         help="(Optional) The batch size to use during each inference iteration. A higher batch size decreases inference time, but increases the required GPU memory.")
-    parser.add_argument('-p', '--processes', required=False, default=12, type=int, help="(Optional) Number of processes to use for parallel processing. Zero to disable multiprocessing.")
+    parser.add_argument('-p', '--processes', required=False, default=4, type=int, help="(Optional) Number of processes to use for parallel processing. Zero to disable multiprocessing.")
     parser.add_argument("-min_rel_particle_size", required=False, default=0.005, type=float, help="(Optional) Minimum relative particle size used for filtering.")
     args = parser.parse_args()
 
