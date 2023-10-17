@@ -125,8 +125,8 @@ def preprocess_single(i: int,
     image = utils.standardize(image, zscore)
 
     image_shape = image.shape
-    source_particle_size_in_mm = tuple(metadata[name]["particle_size"])
-    source_spacing = tuple(metadata[name]["spacing"])
+    source_particle_size_in_mm = [metadata[name]["particle_size"]] * 3
+    source_spacing = [metadata[name]["spacing"]] * 3
     target_particle_size_in_mm = tuple(utils.pixel2mm(target_particle_size_in_pixel, target_spacing))
 
     size_conversion_factor = utils.compute_size_conversion_factor(source_particle_size_in_mm, source_spacing, target_particle_size_in_mm, target_spacing)
