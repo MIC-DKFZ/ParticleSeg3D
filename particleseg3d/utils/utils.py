@@ -577,7 +577,7 @@ def load_nifti(filename: str, return_meta: bool = False, is_seg: bool = False) -
 
 def save_nifti(filename: str,
                image: np.ndarray,
-               spacing: tuple[float] = None,
+               spacing: Tuple[float] = None,
                affine: np.ndarray = None,
                header: dict = None,
                is_seg: bool = False,
