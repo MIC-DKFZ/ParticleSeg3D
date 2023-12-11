@@ -588,7 +588,7 @@ def save_nifti(filename: str,
     Args:
         filename (str): The filename of the NIfTI file to save.
         image (np.ndarray): The image data to save.
-        spacing (tuple[float], optional): The voxel spacing in mm. Defaults to None.
+        spacing (Tuple[float], optional): The voxel spacing in mm. Defaults to None.
         affine (np.ndarray, optional): The affine transform matrix. Defaults to None.
         header (dict, optional): A dictionary of meta-data to save. Defaults to None.
         is_seg (bool, optional): Whether the image is a segmentation. If True, the image is rounded to the nearest
@@ -725,13 +725,13 @@ def save_json(obj: dict, file: str, indent: int = 4, sort_keys: bool = True) -> 
         json.dump(obj, f, sort_keys=sort_keys, indent=indent)
 
 
-def pixel2mm(length: tuple[float], spacing: tuple[float]) -> np.ndarray:
+def pixel2mm(length: Tuple[float], spacing: Tuple[float]) -> np.ndarray:
     """
     Convert a length in pixel to millimeter using the given spacing.
 
     Args:
-        length (tuple[float]): Length in pixel.
-        spacing (tuple[float]): Voxel spacing in millimeter.
+        length (Tuple[float]): Length in pixel.
+        spacing (Tuple[float]): Voxel spacing in millimeter.
 
     Returns:
         np.ndarray: Length in millimeter.
@@ -739,13 +739,13 @@ def pixel2mm(length: tuple[float], spacing: tuple[float]) -> np.ndarray:
     return np.asarray(length) * np.asarray(spacing)
 
 
-def mm2pixel(length: tuple[float], spacing: tuple[float]) -> np.ndarray:
+def mm2pixel(length: Tuple[float], spacing: Tuple[float]) -> np.ndarray:
     """
     Convert a length in millimeter to pixel using the given spacing.
 
     Args:
-        length (tuple[float]): Length in millimeter.
-        spacing (tuple[float]): Voxel spacing in millimeter.
+        length (Tuple[float]): Length in millimeter.
+        spacing (Tuple[float]): Voxel spacing in millimeter.
 
     Returns:
         np.ndarray: Length in pixel.
@@ -753,16 +753,16 @@ def mm2pixel(length: tuple[float], spacing: tuple[float]) -> np.ndarray:
     return np.asarray(length) / np.asarray(spacing)
 
 
-def compute_size_conversion_factor(source_particle_size_in_mm: tuple[float], source_spacing: tuple[float],
-                                    target_particle_size_in_mm: tuple[float], target_spacing: tuple[float]) -> np.ndarray:
+def compute_size_conversion_factor(source_particle_size_in_mm: Tuple[float], source_spacing: Tuple[float],
+                                    target_particle_size_in_mm: Tuple[float], target_spacing: Tuple[float]) -> np.ndarray:
     """
     Compute the conversion factor between the source and target size in pixel.
 
     Args:
-        source_particle_size_in_mm (tuple[float]): Particle size of the source image in millimeter.
-        source_spacing (tuple[float]): Voxel spacing of the source image in millimeter.
-        target_particle_size_in_mm (tuple[float]): Particle size of the target image in millimeter.
-        target_spacing (tuple[float]): Voxel spacing of the target image in millimeter.
+        source_particle_size_in_mm (Tuple[float]): Particle size of the source image in millimeter.
+        source_spacing (Tuple[float]): Voxel spacing of the source image in millimeter.
+        target_particle_size_in_mm (Tuple[float]): Particle size of the target image in millimeter.
+        target_spacing (Tuple[float]): Voxel spacing of the target image in millimeter.
 
     Returns:
         np.ndarray: Conversion factor.
