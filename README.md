@@ -5,7 +5,8 @@
 [![Python Version](https://img.shields.io/pypi/pyversions/ParticleSeg3D.svg?color=green)](https://python.org)
 [![codecov](https://codecov.io/gh/Karol-G/ParticleSeg3D/branch/main/graph/badge.svg)](https://codecov.io/gh/Karol-G/ParticleSeg3D)
 
-[ParticleSeg3D](https://arxiv.org/abs/2301.13319) is an instance segmentation method that extracts individual particles from large micro CT images taken from mineral samples embedded in an epoxy matrix. It is built on the powerful nnU-Net framework, introduces a particle size normalization, and makes use of a border-core representation to enable instance segmentation.
+ParticleSeg3D is an instance segmentation method that extracts individual particles from large micro CT images taken from mineral samples embedded in an epoxy matrix. It is built on the powerful nnU-Net framework, introduces a particle size normalization, and makes use of a border-core representation to enable instance segmentation.
+You can find the Arxiv version of the paper [here](https://arxiv.org/abs/2301.13319) and the journal version [here](https://www.sciencedirect.com/science/article/abs/pii/S0032591023010690).
 
 <p align="center">
   <img width="500" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMDVjOThmZGU3ZmM1Yzg0YzFlNDQyYzViOWIyODdlYTE1ZmNjM2FiNSZlcD12MV9pbnRlcm5hbF9naWZzX2dpZklkJmN0PWc/GxoBNxpCt79Rxt0Ezj/giphy.gif">
@@ -198,13 +199,14 @@ Distributed under the terms of the [Apache Software License 2.0](http://www.apac
 If you are using ParticleSeg3D for your article, please consider citing our paper:
 
 ```
-@misc{gotkowski2023work,
-      title={[Work in progress] Scalable, out-of-the box segmentation of individual particles from mineral samples acquired with micro CT}, 
-      author={Karol Gotkowski and Shuvam Gupta and Jose R. A. Godinho and Camila G. S. Tochtrop and Klaus H. Maier-Hein and Fabian Isensee},
-      year={2023},
-      eprint={2301.13319},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV}
+@article{gotkowski2024particleseg3d,
+  title={ParticleSeg3D: A scalable out-of-the-box deep learning segmentation solution for individual particle characterization from micro CT images in mineral processing and recycling},
+  author={Gotkowski, Karol and Gupta, Shuvam and Godinho, Jose RA and Tochtrop, Camila GS and Maier-Hein, Klaus H and Isensee, Fabian},
+  journal={Powder Technology},
+  volume={434},
+  pages={119286},
+  year={2024},
+  publisher={Elsevier}
 }
 ```
 
