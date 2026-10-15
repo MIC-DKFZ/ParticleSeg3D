@@ -35,6 +35,7 @@ pip install git+https://github.com/MIC-DKFZ/nnUNet.git@ParticleSeg3D
 ## Dataset
 
 The sample dataset consisting of the whole CT images and the patch dataset with extracted patches from these samples alongside their respective instance segmentations can be found [here](https://syncandshare.desy.de/index.php/s/wjiDQ49KangiPj5).
+The patch dataset is licensed under CC BY 4.0; the whole sample scans are published with permission of the data creator, no license specified (see README.md in the data folder).
 
 ## Usage - Inference
 
